@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+html, body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+}
+.leaflet-container {
+	height: 100%;
+	width: 100%;
+	max-width: 100%;
+	max-height: 100%;
+}
+</style>
+<title>gpsd2websocket demo</title>
+</head>
+<body>
+<div id="map"></div>
+<script>
+const map = L.map('map',{
+	center:[55.7522,37.6156],
+	zoom:12,
+	attributionControl: false
+});
+const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+}).addTo(map);
+
+const attr = L.control.attribution({
+	prefix: ""
+}).addTo(map);
+attr.addAttribution('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+
+const positionMarker = L.marker(map.getCenter());
+
+const socket = new WebSocket("ws://localhost:3839");	// gpsd2websocket
+
+socket.onopen = function(event) {
+	positionMarker.addTo(map);
+	console.log("The connection to gpsd2websocket is established");
+};
+
+socket.onmessage = function(event) {
+	//console.log(event.data);
+	let data;
+	try{
+		data = JSON.parse(event.data);
+	}
+	catch(error){
+		console.log('Parsing inbound data error',error.message);
+		return;
+	}
+	switch(data.class){
+	case 'TPV':
+		if((data.lat===null) || (data.lon===null) || (data.lat===undefined) || (data.lon===undefined)) positionMarker.remove();
+		else {
+			map.setView([data.lat,data.lon]);
+			if(!map.hasLayer(positionMarker)) positionMarker.addTo(map);
+			positionMarker.setLatLng(map.getCenter());
+		};
+		break;
+	case 'ATT':
+		break;
+	};
+};
+
+socket.onclose = function(event) {
+	positionMarker.remove();
+	if (event.wasClean) {
+		console.log(`[socket close] Connection close with code ${event.code} by ${event.reason}`);
+	} 
+	else {
+		console.log('[socket close] Connection broke with code ',event.code);
+	}
+};
+
+socket.onerror = function(error) {
+  console.log(`[socket error] ${error.message}`);
+};
+
+</script>
+</body>
+</html>
+
