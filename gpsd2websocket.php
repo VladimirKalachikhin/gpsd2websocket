@@ -23,6 +23,7 @@ $options = getopt('h', $longopts);
 if(isset($options['h']) or isset($options['help'])){
 ?>
 gpsd to websocket proxy server
+version 0.0.1
 Usage:
 php gpsd2websocket.php [--params=params.php] [any parameters]
 Parameters:

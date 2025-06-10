@@ -471,6 +471,11 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 	switch($type){
 	case 'depth': 
 		// Глубину записываем в ATT, не в TPV
+		$value = 0+$value; 	// в результает получается целое или вещественное число
+		if(isset($boatInfo['to_echosounder'])) $value += $boatInfo['to_echosounder'];
+	case 'temp': 
+		// Температуру записываем в ATT, не в TPV
+		$value = 0+$value; 	// в результает получается целое или вещественное число
 		if(!@$instrumentsData['ATT'][$currentDevice]) $instrumentsData['ATT'][$currentDevice] = array(
 			'data'=>array(
 				'class'=>'ATT',
@@ -480,8 +485,6 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 			'cachedTime'=>array()
 		);
 		if($dataTime > @$instrumentsData['ATT'][$currentDevice]['cachedTime'][$type]){
-			$value = 0+$value; 	// в результает получается целое или вещественное число
-			if(isset($boatInfo['to_echosounder'])) $value += $boatInfo['to_echosounder'];
 			if(is_float($value)){
 				 if($value !== @$instrumentsData['ATT'][$currentDevice]['data'][$type]){	// Кстати, такой фокус не пройдёт в JavaScript, потому что переменной $instrumentsData['ATT'][$inInstrumentsData['device']]['data'][$type] в начале не существует.
 					$instrumentsData['ATT'][$currentDevice]['data'][$type] = $value; 	// int or float

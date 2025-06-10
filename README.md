@@ -78,6 +78,7 @@ The **gpsd2websocket** sends the data in JSON format as described in the [gpsd d
 * undefined values (include AIS) is __null__
 * No 'second' field, but has 'timestamp' as unix time
 * No 'depth' value in the TPV class data, this value is only present in class ATT data
+* No 'temp' value in the TPV class data, this value is only present in class ATT data
 * The AIS class contain only:
 ```
 {"class":"AIS",
