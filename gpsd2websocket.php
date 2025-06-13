@@ -23,7 +23,7 @@ $options = getopt('h', $longopts);
 if(isset($options['h']) or isset($options['help'])){
 ?>
 gpsd to websocket proxy server
-version 0.0.1
+version 0.1.0
 Usage:
 php gpsd2websocket.php [--params=params.php] [any parameters]
 Parameters:
@@ -86,13 +86,17 @@ elseif(!@$gpsdProxyTimeouts) $gpsdProxyTimeouts = array(  	// время в се
 	'magtrack' => 10, 	// магнитный курс
 	'magvar' => 31557600, 	// магнитное склонение, один юлианский год.
 	'mheading' => 10,	// магнитный курс
+	'time' => 10		// Set same as lat lon. Regiure!
+),
+'ATT' => array(
 	'depth' => 5, 		// глубина
 	'wanglem' => 3, 	// Wind angle magnetic in degrees.
 	'wangler' => 3, 	// Wind angle relative in degrees.
 	'wanglet' => 3, 	// Wind angle true in degrees.
 	'wspeedr' => 3, 	// Wind speed relative in meters per second.
 	'wspeedt' => 3, 	// Wind speed true in meters per second.
-	'time' => 10		// Set same as lat lon. Regiure!
+	'wtemp' => 30,
+	'temp' => 30
 ),
 'AIS' => array( 	// AIS datatypes. Реально задержка даже от реального AIS может быть минута, а через интернет - до трёх
 	'noVehicle' => 20*60,	// время в секундах, в течении которого цель AIS сохраняется в кеше после получения от неё последней информации
@@ -183,15 +187,18 @@ do {
 	$socksError = $sockets; 	// 
 	$socksError[] = $masterSock; 	// 
 
+	$countsocksRead = count($socksRead);
 	// =============== ожидание сокетов ================
 	$num_changed_sockets = socket_select($socksRead, $socksWrite, $socksError, $SocketTimeout); 	// должно ждать
 	// ===============================
 	// Информация в последней строке терминала
 	// если после ожидания - то будет видно количество сокетов, готовых к записи
+	// но не будет количества, готовых к чтению. 
+	// А если до - то наоборот
 	echo($rotateBeam[$rBi]);	// вращающаяся палка
 	if($dataSourceSock) $str = (count($sockets)-1)." user connections, and";
 	else $str = (count($sockets))." user connections, and no";
-	echo "Has $str data source. Ready ".count($socksRead)." read and ".count($socksWrite)." write socks\r";
+	echo "Has $str data source. Ready $countsocksRead read and ".count($socksWrite)." write socks\r";
 	$rBi++;
 	if($rBi>=count($rotateBeam)) $rBi = 0;
 

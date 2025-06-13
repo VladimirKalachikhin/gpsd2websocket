@@ -1,5 +1,27 @@
 <?php
-/**/
+/*
+Транспортные функции
+	Протокол websocket
+		wsDecode($data)
+		wsEncode($payload, $type = 'text', $masked = false)
+
+	Обслуживание сокетов
+		createSocketServer($host,$port,$connections=1024)
+		createSocketClient($host,$port)
+		chkSocks($socket=null)
+		socketClose($socket)
+		socketRead($sockKey,$maxzerocnt=20)
+
+Прикладные функции
+	writePrepare($instrumentsDataUpdated)
+	writePrepareToSocket($sockKey,$instrumentsDataUpdated=array(),$isNoRealTime=false)
+	updInstrumentsData($inInstrumentsData)
+	updAISdata($inInstrumentsData)
+	chkFreshOfData()
+	chkSubscribe()
+	updUserParms($sockKey,$params)
+
+*/
 // Транспортные функции
 // 		Протокол websocket
 function wsDecode($data){
@@ -101,6 +123,7 @@ else {
 return array($decodedData,$type,$FIN,$tail);
 } // end function wsDecode
 
+
 function wsEncode($payload, $type = 'text', $masked = false){
 /* https://habr.com/ru/post/209864/ 
 Кодирует $payload как один фрейм
@@ -171,7 +194,6 @@ return $frame;
 
 
 // 		Обслуживание сокетов
-
 function createSocketServer($host,$port,$connections=1024){
 /* создаёт сокет, соединенный с $host,$port на своей машине, для приёма входящих соединений 
 в Ubuntu $connections = 0 означает максимально возможное количество соединений, а в Raspbian (Debian?) действительно 0
@@ -351,6 +373,7 @@ foreach($sockets as $sockKey=>$socket){
 };
 }; // end function writePrepare
 
+
 function writePrepareToSocket($sockKey,$instrumentsDataUpdated=array(),$isNoRealTime=false){
 /**/
 global $messages,$instrumentsData,$noRealTime,$currentNoRealTime;
@@ -473,8 +496,15 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 		// Глубину записываем в ATT, не в TPV
 		$value = 0+$value; 	// в результает получается целое или вещественное число
 		if(isset($boatInfo['to_echosounder'])) $value += $boatInfo['to_echosounder'];
+	case 'wanglem': 
+	case 'wangler': 
+	case 'wanglet': 
+	case 'wspeedr': 
+	case 'wspeedt': 
+	case 'wtemp': 
 	case 'temp': 
 		// Температуру записываем в ATT, не в TPV
+		//echo "type=$type; value=$value;                         \n";
 		$value = 0+$value; 	// в результает получается целое или вещественное число
 		if(!@$instrumentsData['ATT'][$currentDevice]) $instrumentsData['ATT'][$currentDevice] = array(
 			'data'=>array(
@@ -539,6 +569,7 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 $instrumentsDataUpdated[$class] = array_unique($instrumentsDataUpdated[$class]);
 return $instrumentsDataUpdated;
 }; // end function updInstrumentsData
+
 
 function updAISdata($inInstrumentsData){
 /* собирает данные подряд, устройства указываются в данных
