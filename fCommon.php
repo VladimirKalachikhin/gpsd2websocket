@@ -509,8 +509,7 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 		if(!@$instrumentsData['ATT'][$currentDevice]) $instrumentsData['ATT'][$currentDevice] = array(
 			'data'=>array(
 				'class'=>'ATT',
-				'device'=>$currentDevice,
-				'time'=>$inInstrumentsData['time']
+				'device'=>$currentDevice
 			),
 			'cachedTime'=>array()
 		);
@@ -518,12 +517,14 @@ foreach($inInstrumentsData as $type => $value){ 	// обновим данные
 			if(is_float($value)){
 				 if($value !== @$instrumentsData['ATT'][$currentDevice]['data'][$type]){	// Кстати, такой фокус не пройдёт в JavaScript, потому что переменной $instrumentsData['ATT'][$inInstrumentsData['device']]['data'][$type] в начале не существует.
 					$instrumentsData['ATT'][$currentDevice]['data'][$type] = $value; 	// int or float
+					$instrumentsData['ATT'][$currentDevice]['data']['time'] = $inInstrumentsData['time'];
 					$instrumentsData['ATT'][$currentDevice]['cachedTime'][$type] = $dataTime;
 					$instrumentsDataUpdated['ATT'][] = $currentDevice;
 				};
 			}
 			else{
 				$instrumentsData['ATT'][$currentDevice]['data'][$type] = $value; 	// int or float
+				$instrumentsData['ATT'][$currentDevice]['data']['time'] = $inInstrumentsData['time'];
 				$instrumentsData['ATT'][$currentDevice]['cachedTime'][$type] = $dataTime;
 				$instrumentsDataUpdated['ATT'][] = $currentDevice;
 			};
@@ -924,6 +925,7 @@ foreach($instrumentsData as $class => $devices){
 					$instrumentsData[$class][$device]['data'][$type] = null;
 					$instrumentsDataUpdated[$class][] = $device;
 					//echo "Данные ".$type." от устройства ".$device." протухли на ".($now - $cachedTime)." сек            \n"; print_r($instrumentsData[$class][$device]['data'][$type]); echo "\n";
+					//echo "instrumentsData[$class][$device] после очистки:"; print_r($instrumentsData[$class][$device]['data']);
 				}
 				elseif((is_null($data['data'][$type])) and isset($gpsdProxyTimeouts[$class][$type]) and (($now - $cachedTime) > ($TPVtimeoutMultiplexor*$gpsdProxyTimeouts[$class][$type]))) {	// Notice if on $gpsdProxyTimeouts not have this $type
 					unset($instrumentsData[$class][$device]['data'][$type]);

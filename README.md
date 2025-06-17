@@ -3,7 +3,7 @@
 **version 0**
 
 Access to **[gpsd](https://gpsd.io/)** data via the websocket protocol from webapps.  
-The main goal is to simplify the creation of web applications using Global Navigation Satellite System receivers.  
+The main goal is to simplify the creation of web applications using Global Navigation Satellite System receivers. The front-end application doesn't need to worry about the data accuracy or the connectivity of the sensors — it receives only reliable information.  
 It is a lightweight proxy server, written in pure PHP without using third-party libraries. The server runs on any platform that has a basic PHP implementation, and is very resource-free.
 
 ## Features
