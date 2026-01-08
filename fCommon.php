@@ -317,10 +317,26 @@ function socketRead($sockKey,$maxzerocnt=20){
 global $messages,$sockets;
 $socket = $sockets[$sockKey];
 if(@$messages[$sockKey]['protocol']=='WS'){ 	// с этим сокетом уже общаемся по протоколу websocket	@ - для дебильного PHP8, где отсутствующий ключ - Warning
-	$buf = @socket_read($socket, 1048576,  PHP_BINARY_READ); 	// читаем до 1MB 65536
+	// читаем до 1MB 65536, считаем, что больше за раз не передают. Или передают?
+	// На всякий случай читаем всё, что передают.
+	// Но на самом деле, по протоколу ws оно и так собирается из нескольких чтений в основном коде.
+	// Здесь разве что если в буфер не влезло...
+	$bufSize = 1048576;
+	$inBuf = '';
+	do{
+		$buf = @socket_read($socket, $bufSize,  PHP_BINARY_READ); 	
+	} while(mb_strlen($buf,'8bit')==$bufSize);	// прочитан ровно буфер. Если совпало, то при следующем чтении должна прочесться пустая строка.
+	$buf = $inBuf;
 }
 else {
-	$buf = @socket_read($socket, 1048576, PHP_NORMAL_READ); 	// читаем построчно
+	$bufSize = 65536;
+	$inBuf = '';
+	do{
+		$buf = @socket_read($socket, $bufSize, PHP_NORMAL_READ); 	// читаем построчно
+		//echo "buf length=".mb_strlen($buf,'8bit')."          \nbuf=$buf;\n";
+		$inBuf .= $buf;	// 
+	} while((mb_strlen($buf,'8bit')==$bufSize) and ($buf[-1]!="\n"));	// прочитан ровно буфер, и сообщение не улеглось ровно в буфер
+	$buf = $inBuf;
 	// строки могут разделяться как \n, так и \r\n, но при PHP_NORMAL_READ reading stops at \n or \r, соотвественно, сперва строка заканчивается на \r, а после следующего чтения - на \r\n, и только тогда можно заменить
 	if(@$buf[-1]=="\n") $buf = trim($buf)."\n";	// т.е., если строка кончалась на \n или \r\n - она будет кончаться на \n; @ - для кретинского PHP8, для которого обращение за пределы массива - Warning
 	else $buf = trim($buf);	// если же строка кончалась на \r или просто - она станет без всего в конце

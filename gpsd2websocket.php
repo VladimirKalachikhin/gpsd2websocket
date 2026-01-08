@@ -23,7 +23,7 @@ $options = getopt('h', $longopts);
 if(isset($options['h']) or isset($options['help'])){
 ?>
 gpsd to websocket proxy server
-version 0.1.1
+version 0.1.2
 Usage:
 php gpsd2websocket.php [--params=params.php] [any parameters]
 Parameters:
@@ -211,7 +211,7 @@ do {
 	foreach($socksWrite as $socket){
 		$sockKey = array_search($socket,$sockets);	// 
 		$msg='';
-		foreach($messages[$sockKey]['output'] as &$msg) { 	// все накопленные сообщения. & для экономии памяти, но что-то не экономится...
+		foreach($messages[$sockKey]['output'] as $msg) { 	// все накопленные сообщения. & для экономии памяти, но что-то не экономится...
 			//echo "Пишем для сокета $sockKey сообщение \n|$msg|\n";
 			$msgParams = null;
 			if(is_array($msg)) list($msg,$msgParams) = $msg;	// второй элемент -- тип фрейма
@@ -229,6 +229,7 @@ do {
 			$msgLen = mb_strlen($msg,'8bit');
 			//$msgLen = strlen($msg);
 			$res = socket_write($socket, $msg, $msgLen);
+			//echo "В сокет № $sockKey данные записаны спустя ",microtime(true)-$dataBeginTime," сек.             \n";
 			if($res === FALSE) { 	// клиент умер
 				echo "\n\nFailed to write data to socket by: " . socket_strerror(socket_last_error($sock)) . "\n";
 				chkSocks($socket);
@@ -288,6 +289,7 @@ do {
 				continue;	// к следующему сокету
 			};
 			if(!($buf=trim($buf))) continue;	// к следующему сокету	// пустая строка может быть возвращена, но нам не нужна пустая строка. Облом же по пустым строкам - в socketRead.
+			//$dataBeginTime = microtime(true);
 			$buf = json_decode($buf,TRUE);
 			if(!$buf){
 				// Это сработает, если и у gpsd съедет крыша, и он начнёт присылать пустые строки.
@@ -451,7 +453,7 @@ do {
 							$messages[$sockKey]['frameType'] = $type;
 							//echo "это первый фрейм $n\n";
 						}
-						if($messages[$sockKey]['frameType']) 	{
+						if(@$messages[$sockKey]['frameType']) 	{
 							$messages[$sockKey]['partFrame'] = $tail;	// я присоединяю перед декодированием
 							continue 4;	// к следующему сокету
 						}
