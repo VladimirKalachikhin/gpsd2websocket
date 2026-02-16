@@ -65,8 +65,7 @@ default:
 }
 
 if ($payloadLength === 126) {
-	//if (mb_strlen($data,'8bit') < 4) return false;
-	if (strlen($data) < 4) return false;
+	if (mb_strlen($data,'8bit') < 4) return false;
 	$mask = mb_substr($data, 4, 4,'8bit');
 	$payloadOffset = 8;
 	$dataLength = bindec(sprintf('%08b', ord($data[2])) . sprintf('%08b', ord($data[3]))) + $payloadOffset;

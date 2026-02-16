@@ -23,7 +23,7 @@ $options = getopt('h', $longopts);
 if(isset($options['h']) or isset($options['help'])){
 ?>
 gpsd to websocket proxy server
-version 0.1.2
+version 0.1.3
 Usage:
 php gpsd2websocket.php [--params=params.php] [any parameters]
 Parameters:
@@ -227,7 +227,6 @@ do {
 			};
 			
 			$msgLen = mb_strlen($msg,'8bit');
-			//$msgLen = strlen($msg);
 			$res = socket_write($socket, $msg, $msgLen);
 			//echo "В сокет № $sockKey данные записаны спустя ",microtime(true)-$dataBeginTime," сек.             \n";
 			if($res === FALSE) { 	// клиент умер
